@@ -89,6 +89,9 @@ pub struct NegRiskResponse {
 #[derive(Clone, Debug, Deserialize, Builder, PartialEq)]
 pub struct FeeRateResponse {
     pub base_fee: u32,
+    /// Fee exponent for the platform fee formula (V2).
+    #[serde(default)]
+    pub exponent: Option<u32>,
 }
 
 /// Response from the Polymarket geoblock endpoint.

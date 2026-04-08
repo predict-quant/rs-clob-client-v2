@@ -48,7 +48,7 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-polymarket-client-sdk = "0.3"
+polymarket-client-sdk = "0.4"
 ```
 
 or
@@ -161,7 +161,7 @@ use polymarket_client_sdk::clob::{Client, Config};
 async fn main() -> anyhow::Result<()> {
     let private_key = std::env::var(PRIVATE_KEY_VAR).expect("Need a private key");
     let signer = LocalSigner::from_str(&private_key)?.with_chain_id(Some(POLYGON));
-    let client = Client::new("https://clob.polymarket.com", Config::default())?
+    let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
         .authentication_builder(&signer)
         .authenticate()
         .await?;
@@ -180,7 +180,7 @@ async fn main() -> anyhow::Result<()> {
 For proxy/Safe wallets, the funder address is **automatically derived** using CREATE2 from your signer's EOA address:
 
 ```rust,ignore
-let client = Client::new("https://clob.polymarket.com", Config::default())?
+let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
     .authentication_builder(&signer)
     .signature_type(SignatureType::GnosisSafe)  // Funder auto-derived via CREATE2
     .authenticate()
@@ -193,7 +193,7 @@ shown on polymarket.com when you log in with a browser wallet.
 If you need to override the derived address (e.g., for advanced use cases), you can explicitly provide it:
 
 ```rust,ignore
-let client = Client::new("https://clob.polymarket.com", Config::default())?
+let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
     .authentication_builder(&signer)
     .funder(address!("<your-polymarket-wallet-address>"))
     .signature_type(SignatureType::GnosisSafe)
@@ -225,6 +225,7 @@ The **signature_type** parameter tells the system how to verify your signatures:
    and any wallet where you control the private key directly
 - `signature_type=1`: Email/Magic wallet signatures (delegated signing)
 - `signature_type=2`: Browser wallet proxy signatures (when using a proxy contract, not direct wallet connections)
+- `signature_type=3`: EIP-1271 smart contract wallet signatures (**V2 orders only**)
 
 See [SignatureType](src/clob/types/mod.rs#L182) for more information.
 
@@ -244,7 +245,7 @@ use polymarket_client_sdk::types::Decimal;
 async fn main() -> anyhow::Result<()> {
     let private_key = std::env::var(PRIVATE_KEY_VAR).expect("Need a private key");
     let signer = LocalSigner::from_str(&private_key)?.with_chain_id(Some(POLYGON));
-    let client = Client::new("https://clob.polymarket.com", Config::default())?
+    let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
         .authentication_builder(&signer)
         .authenticate()
         .await?;
@@ -282,7 +283,7 @@ use rust_decimal_macros::dec;
 async fn main() -> anyhow::Result<()> {
     let private_key = std::env::var(PRIVATE_KEY_VAR).expect("Need a private key");
     let signer = LocalSigner::from_str(&private_key)?.with_chain_id(Some(POLYGON));
-    let client = Client::new("https://clob.polymarket.com", Config::default())?
+    let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
         .authentication_builder(&signer)
         .authenticate()
         .await?;
@@ -301,6 +302,42 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+```
+
+##### V1 and V2 Orders
+
+The SDK supports both V1 (legacy) and V2 exchange contracts. **V2 is the default.** V2 orders add `timestamp`,
+`metadata`, and `builder` fields, and remove the V1-only `taker`, `nonce`, and `feeRateBps` fields. The EIP-712
+domain version is `"2"` for V2 orders.
+
+```rust,ignore
+use alloy::primitives::B256;
+use polymarket_client_sdk::clob::types::OrderVersion;
+
+// V2 order (default) — with metadata and builder attribution
+let order = client
+    .limit_order()
+    .token_id("<token-id>")
+    .size(Decimal::ONE_HUNDRED)
+    .price(dec!(0.5))
+    .side(Side::Buy)
+    .metadata(B256::ZERO)           // optional: 32 bytes of custom metadata
+    .builder_code(B256::ZERO)       // optional: builder fee attribution
+    .defer_exec(false)              // optional: defer execution
+    .build()
+    .await?;
+
+// V1 order (legacy) — explicitly opt in
+let order = client
+    .limit_order()
+    .version(OrderVersion::V1)
+    .token_id("<token-id>")
+    .size(Decimal::ONE_HUNDRED)
+    .price(dec!(0.5))
+    .side(Side::Buy)
+    .nonce(0)                        // V1-only field
+    .build()
+    .await?;
 ```
 
 #### Builder-authenticated client
@@ -323,7 +360,7 @@ async fn main() -> anyhow::Result<()> {
     let signer = LocalSigner::from_str(&private_key)?.with_chain_id(Some(POLYGON));
     let builder_config = BuilderConfig::remote("http://localhost:3000/sign", None)?; // Or your signing server
 
-    let client = Client::new("https://clob.polymarket.com", Config::default())?
+    let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
         .authentication_builder(&signer)
         .signature_type(SignatureType::Proxy)  // Funder auto-derived via CREATE2
         .authenticate()

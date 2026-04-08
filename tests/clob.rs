@@ -1395,8 +1395,8 @@ mod authenticated {
         TotalUserEarningResponse, TradeResponse, UserEarningResponse, UserRewardsEarningResponse,
     };
     use polymarket_client_sdk::clob::types::{
-        AssetType, OrderStatusType, OrderType, Side, SignableOrder, SignedOrder, TickSize,
-        TradeStatusType, TraderSide,
+        AssetType, OrderStatusType, OrderType, OrderVersion, Side, SignableOrder, SignedOrder,
+        TickSize, TradeStatusType, TraderSide,
     };
     #[cfg(feature = "heartbeats")]
     use polymarket_client_sdk::error::Synchronization;
@@ -1524,6 +1524,7 @@ mod authenticated {
         let taker = address!("0xf7fB45986800e2D259BAa25B56466bd02dA37a44");
         let signable_order = client
             .limit_order()
+            .version(OrderVersion::V1)
             .token_id(token_1())
             .price(dec!(0.512))
             .size(Decimal::ONE_HUNDRED)
@@ -1537,9 +1538,10 @@ mod authenticated {
 
         let expected = SignedOrder::builder()
             .owner(API_KEY)
-            .order(signable_order.order)
+            .payload(signable_order.payload.clone())
             .order_type(OrderType::GTC)
             .post_only(false)
+            .maybe_defer_exec(None)
             .signature(Signature::new(
                 U256::from_str(
                     "67938079796141091828598175285011746318151402208362009718761031231176791189384",
@@ -1551,12 +1553,15 @@ mod authenticated {
             ))
             .build();
 
-        assert_eq!(signed_order.order.taker, taker);
-        assert_eq!(signed_order.order.maker, funder);
-        assert_ne!(signed_order.order.maker, client.address());
-        assert_eq!(signed_order.order.signatureType, SignatureType::Proxy as u8);
-        assert_eq!(signed_order.order.nonce, U256::from(2));
-        assert_eq!(signed_order.order.salt, U256::from(1));
+        assert_eq!(signed_order.order().taker, taker);
+        assert_eq!(signed_order.order().maker, funder);
+        assert_ne!(signed_order.order().maker, client.address());
+        assert_eq!(
+            signed_order.order().signatureType,
+            SignatureType::Proxy as u8
+        );
+        assert_eq!(signed_order.order().nonce, U256::from(2));
+        assert_eq!(signed_order.order().salt, U256::from(1));
         assert_eq!(
             client.address(),
             address!("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266")

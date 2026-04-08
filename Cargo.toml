@@ -95,6 +95,16 @@ tokio = { version = "1.50.0", features = ["rt-multi-thread", "macros"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [[example]]
+name = "buy_tokens_v2"
+path = "examples/clob/buy_tokens_v2.rs"
+required-features = ["clob"]
+
+[[example]]
+name = "cancel_orders_v2"
+path = "examples/clob/cancel_orders_v2.rs"
+required-features = ["clob"]
+
+[[example]]
 name = "async"
 path = "examples/clob/async.rs"
 required-features = ["clob"]

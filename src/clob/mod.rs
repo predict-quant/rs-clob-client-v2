@@ -15,12 +15,26 @@
 //! - **Authenticated**: Order placement/cancellation, balances, API keys, rewards
 //! - **Builder Authentication**: Special endpoints for market makers and builders
 //!
+//! ## Order Versions
+//!
+//! The SDK supports both **V1** (legacy) and **V2** exchange contracts. **V2 is the default.**
+//!
+//! V2 orders differ from V1 in several ways:
+//! - **New fields**: `timestamp`, `metadata` (bytes32), `builder` (bytes32 for fee attribution)
+//! - **Removed fields**: `taker`, `nonce`, `feeRateBps` (not part of V2 on-chain struct)
+//! - **EIP-712 domain version**: `"2"` (V1 uses `"1"`)
+//! - **New signature type**: [`Poly1271`](types::SignatureType::Poly1271) for EIP-1271 smart contract wallets (V2 only)
+//! - **New field**: `deferExec` on order submission to defer execution
+//!
+//! Use `.version(OrderVersion::V1)` on the order builder to explicitly create V1 orders.
+//!
 //! ## Public Endpoints (No Authentication Required)
 //!
 //! | Endpoint | Description |
 //! |----------|-------------|
 //! | `/` | Health check - returns "OK" |
 //! | `/time` | Current server timestamp |
+//! | `/version` | API version (1 or 2) |
 //! | `/midpoint` | Mid-market price for a token |
 //! | `/midpoints` | Batch midpoint prices |
 //! | `/price` | Best bid or ask price |
@@ -78,7 +92,7 @@
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Create an unauthenticated client
-//! let client = Client::new("https://clob.polymarket.com", Config::default())?;
+//! let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
 //!
 //! // Check API health
 //! let status = client.ok().await?;
@@ -111,7 +125,7 @@
 //! let private_key = std::env::var(PRIVATE_KEY_VAR)?;
 //! let signer = LocalSigner::from_str(&private_key)?.with_chain_id(Some(POLYGON));
 //!
-//! let client = Client::new("https://clob.polymarket.com", Config::default())?
+//! let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
 //!     .authentication_builder(&signer)
 //!     .authenticate()
 //!     .await?;
@@ -141,7 +155,7 @@
 //!
 //! # API Base URL
 //!
-//! The default API endpoint is `https://clob.polymarket.com`.
+//! The default API endpoint is `https://clob-v2.polymarket.com`.
 
 pub mod client;
 pub mod order_builder;

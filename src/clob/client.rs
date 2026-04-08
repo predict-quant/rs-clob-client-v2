@@ -52,7 +52,9 @@ use crate::clob::types::{
     CreateRfqRequestRequest, CreateRfqRequestResponse, RfqQuote, RfqQuotesRequest, RfqRequest,
     RfqRequestsRequest,
 };
-use crate::clob::types::{SignableOrder, SignatureType, SignedOrder, TickSize};
+use crate::clob::types::{
+    OrderPayload, OrderVersion, SignableOrder, SignatureType, SignedOrder, TickSize,
+};
 use crate::error::{Error, Kind as ErrorKind, Synchronization};
 use crate::types::Address;
 use crate::{
@@ -61,7 +63,8 @@ use crate::{
 };
 
 const ORDER_NAME: Option<Cow<'static, str>> = Some(Cow::Borrowed("Polymarket CTF Exchange"));
-const VERSION: Option<Cow<'static, str>> = Some(Cow::Borrowed("1"));
+const VERSION_V1: Option<Cow<'static, str>> = Some(Cow::Borrowed("1"));
+const VERSION_V2: Option<Cow<'static, str>> = Some(Cow::Borrowed("2"));
 
 const TERMINAL_CURSOR: &str = "LTE="; // base64("-1")
 
@@ -256,7 +259,7 @@ impl<S: Signer, K: Kind> AuthenticationBuilder<'_, S, K> {
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<()> {
-///     let client = Client::new("https://clob.polymarket.com", Config::default())?;
+///     let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
 ///
 ///     let ok = client.ok().await?;
 ///     println!("Ok: {ok}");
@@ -278,7 +281,7 @@ impl<S: Signer, K: Kind> AuthenticationBuilder<'_, S, K> {
 /// async fn main() -> anyhow::Result<()> {
 ///     let private_key = std::env::var(PRIVATE_KEY_VAR).expect("Need a private key");
 ///     let signer = LocalSigner::from_str(&private_key)?.with_chain_id(Some(POLYGON));
-///     let client = Client::new("https://clob.polymarket.com", Config::default())?
+///     let client = Client::new("https://clob-v2.polymarket.com", Config::default())?
 ///         .authentication_builder(&signer)
 ///         .authenticate()
 ///         .await?;
@@ -352,7 +355,7 @@ impl Drop for DroppingCancellationToken {
 
 impl Default for Client<Unauthenticated> {
     fn default() -> Self {
-        Client::new("https://clob.polymarket.com", Config::default())
+        Client::new("https://clob-v2.polymarket.com", Config::default())
             .expect("Client with default endpoint should succeed")
     }
 }
@@ -494,7 +497,7 @@ impl<S: State> Client<S> {
     /// ```no_run
     /// # use polymarket_client_sdk::clob::{Client, Config};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    /// let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     /// println!("Host: {}", client.host());
     /// # Ok(())
     /// # }
@@ -527,7 +530,7 @@ impl<S: State> Client<S> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use polymarket_client_sdk::types::U256;
     ///
-    /// let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    /// let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     /// client.set_tick_size(U256::ZERO, TickSize::Hundredth);
     /// # Ok(())
     /// # }
@@ -548,7 +551,7 @@ impl<S: State> Client<S> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use polymarket_client_sdk::types::U256;
     ///
-    /// let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    /// let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     /// client.set_neg_risk(U256::ZERO, true);
     /// # Ok(())
     /// # }
@@ -570,7 +573,7 @@ impl<S: State> Client<S> {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use polymarket_client_sdk::types::U256;
     ///
-    /// let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    /// let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     /// client.set_fee_rate_bps(U256::ZERO, 10); // 0.10% fee
     /// # Ok(())
     /// # }
@@ -603,6 +606,20 @@ impl<S: State> Client<S> {
     /// Returns an error if the request fails.
     pub async fn server_time(&self) -> Result<Timestamp> {
         self.inner.server_time().await
+    }
+
+    /// Returns the API version supported by the server (1 or 2).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the request fails.
+    pub async fn version(&self) -> Result<u32> {
+        let request = self
+            .client()
+            .request(Method::GET, format!("{}version", self.host()))
+            .build()?;
+
+        crate::request(&self.inner.client, request, None).await
     }
 
     /// Retrieves the midpoint price for a single market outcome token.
@@ -844,6 +861,7 @@ impl<S: State> Client<S> {
             tracing::trace!(token_id = %token_id, base_fee = *base_fee, "cache hit: fee_rate_bps");
             return Ok(FeeRateResponse {
                 base_fee: *base_fee,
+                exponent: None,
             });
         }
 
@@ -888,7 +906,7 @@ impl<S: State> Client<S> {
     ///
     /// #[tokio::main]
     /// async fn main() -> anyhow::Result<()> {
-    ///     let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    ///     let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     ///
     ///     let geoblock = client.check_geoblock().await?;
     ///
@@ -1169,7 +1187,7 @@ impl Client<Unauthenticated> {
     ///
     /// # Arguments
     ///
-    /// * `host` - The CLOB API URL (e.g., <https://clob.polymarket.com>)
+    /// * `host` - The CLOB API URL (e.g., <https://clob-v2.polymarket.com>)
     /// * `config` - Client configuration options
     ///
     /// # Errors
@@ -1182,7 +1200,7 @@ impl Client<Unauthenticated> {
     /// use polymarket_client_sdk::clob::{Client, Config};
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    /// let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     /// # Ok(())
     /// # }
     /// ```
@@ -1240,7 +1258,7 @@ impl Client<Unauthenticated> {
     /// use std::str::FromStr;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new("https://clob.polymarket.com", Config::default())?;
+    /// let client = Client::new("https://clob-v2.polymarket.com", Config::default())?;
     /// let signer = LocalSigner::from_str("0x...")?;
     ///
     /// let authenticated_client = client
@@ -1414,18 +1432,31 @@ impl<K: Kind> Client<Authenticated<K>> {
     }
 
     /// Creates an [`OrderBuilder<Limit, K>`] used to construct a limit order.
+    ///
+    /// Defaults to V2 orders. Use `.version(OrderVersion::V1)` on the returned builder
+    /// to create a V1 (legacy) order instead. V2 orders support `.metadata()`,
+    /// `.builder_code()`, and `.defer_exec()` fields.
     #[must_use]
     pub fn limit_order(&self) -> OrderBuilder<Limit, K> {
         self.order_builder()
     }
 
     /// Creates an [`OrderBuilder<Market, K>`] used to construct a market order.
+    ///
+    /// Defaults to V2 orders. Use `.version(OrderVersion::V1)` on the returned builder
+    /// to create a V1 (legacy) order instead.
     #[must_use]
     pub fn market_order(&self) -> OrderBuilder<Market, K> {
         self.order_builder()
     }
 
-    /// Attempts to sign the provided [`SignableOrder`] using the inner signer of [`Authenticated<K>`]
+    /// Signs the provided [`SignableOrder`] using EIP-712 typed data signing.
+    ///
+    /// Automatically selects the correct signing parameters based on the order version:
+    /// - **V1**: EIP-712 domain version `"1"`, V1 exchange contract address
+    /// - **V2**: EIP-712 domain version `"2"`, V2 exchange contract address
+    ///
+    /// The exchange contract is resolved from the chain ID and neg-risk status of the token.
     #[expect(
         clippy::missing_panics_doc,
         reason = "No need to publicly document as we are guarded by the typestate pattern. \
@@ -1435,39 +1466,66 @@ impl<K: Kind> Client<Authenticated<K>> {
         &self,
         signer: &S,
         SignableOrder {
-            order,
+            payload,
             order_type,
             post_only,
+            defer_exec,
         }: SignableOrder,
     ) -> Result<SignedOrder> {
-        let token_id = order.tokenId;
-        let neg_risk = self.neg_risk(token_id).await?.neg_risk;
         let chain_id = signer
             .chain_id()
             .expect("Validated not none in `authenticate`");
 
-        let exchange_contract = contract_config(chain_id, neg_risk)
-            .ok_or(Error::missing_contract_config(chain_id, neg_risk))?
-            .exchange;
+        let signature = match &payload {
+            OrderPayload::V1(order) => {
+                let neg_risk = self.neg_risk(order.tokenId).await?.neg_risk;
+                let exchange_contract = contract_config(chain_id, neg_risk)
+                    .ok_or(Error::missing_contract_config(chain_id, neg_risk))?
+                    .exchange;
 
-        let domain = Eip712Domain {
-            name: ORDER_NAME,
-            version: VERSION,
-            chain_id: Some(U256::from(chain_id)),
-            verifying_contract: Some(exchange_contract),
-            ..Eip712Domain::default()
+                let domain = Eip712Domain {
+                    name: ORDER_NAME,
+                    version: VERSION_V1,
+                    chain_id: Some(U256::from(chain_id)),
+                    verifying_contract: Some(exchange_contract),
+                    ..Eip712Domain::default()
+                };
+
+                signer
+                    .sign_hash(&order.eip712_signing_hash(&domain))
+                    .await?
+            }
+            OrderPayload::V2 { order, .. } => {
+                let neg_risk = self.neg_risk(order.tokenId).await?.neg_risk;
+                let config = contract_config(chain_id, neg_risk)
+                    .ok_or(Error::missing_contract_config(chain_id, neg_risk))?;
+                let exchange_v2 = config.exchange_v2.ok_or_else(|| {
+                    Error::validation(format!(
+                        "No V2 exchange contract configured for chain_id={chain_id}, neg_risk={neg_risk}"
+                    ))
+                })?;
+
+                let domain = Eip712Domain {
+                    name: ORDER_NAME,
+                    version: VERSION_V2,
+                    chain_id: Some(U256::from(chain_id)),
+                    verifying_contract: Some(exchange_v2),
+                    ..Eip712Domain::default()
+                };
+
+                signer
+                    .sign_hash(&order.eip712_signing_hash(&domain))
+                    .await?
+            }
         };
 
-        let signature = signer
-            .sign_hash(&order.eip712_signing_hash(&domain))
-            .await?;
-
         Ok(SignedOrder {
-            order,
+            payload,
             signature,
             order_type,
             owner: self.state().credentials.key,
             post_only,
+            defer_exec,
         })
     }
 
@@ -2125,6 +2183,10 @@ impl<K: Kind> Client<Authenticated<K>> {
             taker: None,
             order_type: None,
             post_only: Some(false),
+            version: OrderVersion::default(),
+            metadata: None,
+            builder_code: None,
+            defer_exec: None,
             client: Client {
                 inner: Arc::clone(&self.inner),
                 #[cfg(feature = "heartbeats")]

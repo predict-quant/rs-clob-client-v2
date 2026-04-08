@@ -62,12 +62,14 @@ static CONFIG: phf::Map<ChainId, ContractConfig> = phf_map! {
         collateral: address!("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"),
         conditional_tokens: address!("0x4D97DCd97eC945f40cF65F87097ACe5EA0476045"),
         neg_risk_adapter: None,
+        exchange_v2: Some(address!("0xE111180000d2663C0091e4f400237545B87B996B")),
     },
     80002_u64 => ContractConfig {
         exchange: address!("0xdFE02Eb6733538f8Ea35D585af8DE5958AD99E40"),
         collateral: address!("0x9c4e1703476e875070ee25b56a58b008cfb8fa78"),
         conditional_tokens: address!("0x69308FB512518e39F9b16112fA8d994F4e2Bf8bB"),
         neg_risk_adapter: None,
+        exchange_v2: Some(address!("0xE111180000d2663C0091e4f400237545B87B996B")),
     },
 };
 
@@ -77,12 +79,14 @@ static NEG_RISK_CONFIG: phf::Map<ChainId, ContractConfig> = phf_map! {
         collateral: address!("0x2791bca1f2de4661ed88a30c99a7a9449aa84174"),
         conditional_tokens: address!("0x4D97DCd97eC945f40cF65F87097ACe5EA0476045"),
         neg_risk_adapter: Some(address!("0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296")),
+        exchange_v2: Some(address!("0xe2222d279d744050d28e00520010520000310F59")),
     },
     80002_u64 => ContractConfig {
         exchange: address!("0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296"),
         collateral: address!("0x9c4e1703476e875070ee25b56a58b008cfb8fa78"),
         conditional_tokens: address!("0x69308FB512518e39F9b16112fA8d994F4e2Bf8bB"),
         neg_risk_adapter: Some(address!("0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296")),
+        exchange_v2: Some(address!("0xe2222d279d744050d28e00520010520000310F59")),
     },
 };
 
@@ -118,6 +122,8 @@ pub struct ContractConfig {
     /// The Neg Risk Adapter contract address. Only present for neg-risk market configs.
     /// Users must approve this contract for token transfers to trade in neg-risk markets.
     pub neg_risk_adapter: Option<Address>,
+    /// The V2 exchange contract address (CTF Exchange V2).
+    pub exchange_v2: Option<Address>,
 }
 
 /// Wallet contract configuration for CREATE2 address derivation
@@ -261,7 +267,7 @@ async fn request<Response: DeserializeOwned>(
     let path = request.url().path().to_owned();
 
     if let Some(h) = headers {
-        *request.headers_mut() = h;
+        request.headers_mut().extend(h);
     }
 
     let response = client.execute(request).await?;

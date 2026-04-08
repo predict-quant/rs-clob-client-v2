@@ -218,7 +218,6 @@ pub(crate) mod l1 {
 
 #[cfg(feature = "clob")]
 pub(crate) mod l2 {
-    use alloy::hex::ToHexExt as _;
     use reqwest::Request;
     use reqwest::header::HeaderMap;
     use secrecy::ExposeSecret as _;
@@ -244,10 +243,7 @@ pub(crate) mod l2 {
 
         let mut map = HeaderMap::new();
 
-        map.insert(
-            POLY_ADDRESS,
-            state.address.encode_hex_with_prefix().parse()?,
-        );
+        map.insert(POLY_ADDRESS, state.address.to_checksum(None).parse()?);
         map.insert(POLY_API_KEY, state.credentials.key.to_string().parse()?);
         map.insert(
             POLY_PASSPHRASE,
@@ -493,7 +489,7 @@ mod tests {
 
         assert_eq!(
             headers[l2::POLY_ADDRESS],
-            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
         );
         assert_eq!(
             headers[l2::POLY_PASSPHRASE],
