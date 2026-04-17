@@ -707,7 +707,6 @@ pub struct Page<T> {
     pub count: u64,
 }
 
-/// Response from creating or listing read-only API keys.
 #[non_exhaustive]
 #[derive(Clone, Debug, Deserialize, Builder, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -717,53 +716,36 @@ pub struct ReadonlyApiKeyResponse {
     pub created_at: Option<DateTime<Utc>>,
 }
 
-/// Response from the CLOB market info endpoint (`/clob-markets/{condition_id}`).
-///
-/// Provides combined market configuration data that can be used to prime local caches.
 #[non_exhaustive]
 #[serde_as]
 #[derive(Clone, Debug, Deserialize, Builder, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ClobMarketInfoResponse {
-    /// The market condition ID.
     #[serde_as(as = "NoneAsEmptyString")]
     #[serde(default)]
     pub condition_id: Option<B256>,
-    /// Tokens in this market.
     #[serde(default)]
     #[serde_as(deserialize_as = "DefaultOnNull")]
     pub tokens: Vec<Token>,
-    /// Minimum tick size for price increments.
     #[serde_as(as = "TryFromInto<Decimal>")]
     pub min_tick_size: TickSize,
-    /// Whether this market uses the `NegRisk` adapter.
     pub neg_risk: bool,
-    /// Trading fee in basis points.
     #[serde(default)]
     pub fee_rate_bps: u32,
-    /// Fee exponent for the platform fee formula.
     #[serde(default)]
     pub fee_exponent: Option<u32>,
-    /// Maker base fee.
     #[serde(default)]
     pub maker_base_fee: Option<Decimal>,
-    /// Taker base fee.
     #[serde(default)]
     pub taker_base_fee: Option<Decimal>,
 }
 
-/// Builder fee rates for a given builder code.
-///
-/// The server returns rates in basis points; the client converts to decimal rates
-/// by dividing by 10000.
 #[non_exhaustive]
 #[derive(Clone, Debug, Deserialize, Builder, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct BuilderFeeRateResponse {
-    /// Builder maker fee rate in basis points.
     #[serde(alias = "builder_maker_fee_rate_bps")]
     pub builder_maker_fee_rate_bps: u32,
-    /// Builder taker fee rate in basis points.
     #[serde(alias = "builder_taker_fee_rate_bps")]
     pub builder_taker_fee_rate_bps: u32,
 }

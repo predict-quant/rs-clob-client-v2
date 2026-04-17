@@ -126,6 +126,10 @@ impl<K: AuthKind> OrderBuilder<Limit, K> {
     }
 
     /// Validates and transforms this limit builder into a [`SignableOrder`]
+    ///
+    /// # Panics
+    ///
+    /// Panics if the system clock is before the Unix epoch.
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip(self), err(level = "warn"))
@@ -349,6 +353,10 @@ impl<K: AuthKind> OrderBuilder<Market, K> {
     }
 
     /// Validates and transforms this market builder into a [`SignableOrder`]
+    ///
+    /// # Panics
+    ///
+    /// Panics if the system clock is before the Unix epoch.
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip(self), err(level = "warn"))

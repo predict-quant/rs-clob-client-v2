@@ -3235,9 +3235,9 @@ mod v2 {
             assert_eq!(*expiration, U256::ZERO, "default expiration is zero");
 
             // maker_amount = 100 * 0.50 = 50 USDC = 50_000_000
-            assert_eq!(order.makerAmount, U256::from(50_000_000u64));
+            assert_eq!(order.makerAmount, U256::from(50_000_000_u64));
             // taker_amount = 100 shares = 100_000_000
-            assert_eq!(order.takerAmount, U256::from(100_000_000u64));
+            assert_eq!(order.takerAmount, U256::from(100_000_000_u64));
 
             Ok(())
         }
@@ -3261,9 +3261,9 @@ mod v2 {
             let order = &signable.payload.order;
             assert_eq!(order.side, Side::Sell as u8);
             // maker_amount = 100 shares = 100_000_000
-            assert_eq!(order.makerAmount, U256::from(100_000_000u64));
+            assert_eq!(order.makerAmount, U256::from(100_000_000_u64));
             // taker_amount = 100 * 0.34 = 34 USDC = 34_000_000
-            assert_eq!(order.takerAmount, U256::from(34_000_000u64));
+            assert_eq!(order.takerAmount, U256::from(34_000_000_u64));
 
             Ok(())
         }
@@ -3317,7 +3317,7 @@ mod v2 {
                 .await?;
 
             let exp = &signable.payload.expiration;
-            assert_eq!(*exp, U256::from(1_700_000_000u64));
+            assert_eq!(*exp, U256::from(1_700_000_000_u64));
             assert_eq!(signable.order_type, OrderType::GTD);
 
             Ok(())
@@ -3463,7 +3463,7 @@ mod v2 {
                 .build()
                 .await;
             // 0.9 == 1 - 0.1, so it's at the boundary — should succeed
-            assert!(err.is_ok());
+            err.unwrap();
 
             // Price below minimum tick size
             let err = client
@@ -3551,7 +3551,7 @@ mod v2 {
 
             let order = &signable.payload.order;
             // 100 * 0.5 = 50 USDC = 50_000_000
-            assert_eq!(order.makerAmount, U256::from(50_000_000u64));
+            assert_eq!(order.makerAmount, U256::from(50_000_000_u64));
 
             // Thousandth tick size
             ensure_requirements_v2(&server, token_2(), TickSize::Thousandth);
@@ -3567,7 +3567,7 @@ mod v2 {
 
             let order = &signable.payload.order;
             // 100 * 0.512 = 51.2 USDC = 51_200_000
-            assert_eq!(order.makerAmount, U256::from(51_200_000u64));
+            assert_eq!(order.makerAmount, U256::from(51_200_000_u64));
 
             Ok(())
         }
@@ -3684,8 +3684,8 @@ mod v2 {
             assert_eq!(order.metadata, B256::ZERO);
             assert_eq!(order.builder, B256::ZERO);
             // amount = 100 USDC, price = 0.5 (cutoff), shares = 100/0.5 = 200
-            assert_eq!(order.makerAmount, U256::from(100_000_000u64));
-            assert_eq!(order.takerAmount, U256::from(200_000_000u64));
+            assert_eq!(order.makerAmount, U256::from(100_000_000_u64));
+            assert_eq!(order.takerAmount, U256::from(200_000_000_u64));
 
             Ok(())
         }
@@ -3719,8 +3719,8 @@ mod v2 {
             let order = &signable.payload.order;
             assert_eq!(order.side, Side::Sell as u8);
             // maker = 100 shares, taker = 100 * 0.4 (cutoff) = 40 USDC
-            assert_eq!(order.makerAmount, U256::from(100_000_000u64));
-            assert_eq!(order.takerAmount, U256::from(40_000_000u64));
+            assert_eq!(order.makerAmount, U256::from(100_000_000_u64));
+            assert_eq!(order.takerAmount, U256::from(40_000_000_u64));
 
             Ok(())
         }
@@ -3772,21 +3772,21 @@ mod v2 {
         #[test]
         fn signed_order_json_structure() {
             let mut order = polymarket_client_sdk_v2::clob::types::Order::default();
-            order.salt = U256::from(12345u64);
+            order.salt = U256::from(12_345_u64);
             order.maker = address!("0xaDEFf2158d668f64308C62ef227C5CcaCAAf976D");
             order.signer = address!("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-            order.tokenId = U256::from(999u64);
-            order.makerAmount = U256::from(50_000_000u64);
-            order.takerAmount = U256::from(100_000_000u64);
+            order.tokenId = U256::from(999_u64);
+            order.makerAmount = U256::from(50_000_000_u64);
+            order.takerAmount = U256::from(100_000_000_u64);
             order.side = Side::Buy as u8;
             order.signatureType = SignatureType::Eoa as u8;
-            order.timestamp = U256::from(1700000000000u64);
+            order.timestamp = U256::from(1_700_000_000_000_u64);
             order.metadata = B256::from([0xAA; 32]);
             order.builder = B256::from([0xBB; 32]);
 
             let signed = SignedOrder::builder()
-                .payload(OrderPayload::new(order, U256::from(1700001000u64)))
-                .signature(Signature::new(U256::from(1u64), U256::from(2u64), false))
+                .payload(OrderPayload::new(order, U256::from(1_700_001_000_u64)))
+                .signature(Signature::new(U256::from(1_u64), U256::from(2_u64), false))
                 .order_type(OrderType::GTC)
                 .owner(API_KEY)
                 .post_only(false)

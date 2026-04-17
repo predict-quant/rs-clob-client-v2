@@ -1177,13 +1177,12 @@ impl<S: State> Client<S> {
 
     /// Returns combined CLOB market info for a condition ID.
     ///
-    /// This endpoint (`GET /clob-markets/{condition_id}`) returns tick size, neg risk,
-    /// fee rate, and token data in a single call. It also populates the local caches
-    /// for tick size, neg risk, and fee rate for all tokens in the market.
+    /// Also populates the local caches for tick size, neg risk, and fee rate
+    /// for all tokens in the market.
     ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the response cannot be parsed.
+    /// Returns an error if the request fails or the condition ID is invalid.
     pub async fn clob_market_info(&self, condition_id: &str) -> Result<ClobMarketInfoResponse> {
         let request = self
             .client()
@@ -1196,7 +1195,6 @@ impl<S: State> Client<S> {
         let response: ClobMarketInfoResponse =
             crate::request(&self.inner.client, request, None).await?;
 
-        // Prime local caches from the response
         for token in &response.tokens {
             self.inner
                 .tick_sizes
@@ -1214,12 +1212,9 @@ impl<S: State> Client<S> {
 
     /// Looks up a market by token ID.
     ///
-    /// This is used internally for cache priming when the condition ID for a token
-    /// is not yet known.
-    ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the response cannot be parsed.
+    /// Returns an error if the request fails or the token ID is invalid.
     pub async fn market_by_token(&self, token_id: U256) -> Result<MarketResponse> {
         let request = self
             .client()
@@ -2058,11 +2053,9 @@ impl<K: Kind> Client<Authenticated<K>> {
 
     /// Creates a new read-only API key.
     ///
-    /// Read-only keys can access account data but cannot place or cancel orders.
-    ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the response cannot be parsed.
+    /// Returns an error if the request fails.
     pub async fn create_readonly_api_key(&self) -> Result<ReadonlyApiKeyResponse> {
         let request = self
             .client()
@@ -2076,11 +2069,11 @@ impl<K: Kind> Client<Authenticated<K>> {
         crate::request(&self.inner.client, request, Some(headers)).await
     }
 
-    /// Lists all read-only API keys for the authenticated user.
+    /// Lists all read-only API keys.
     ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the response cannot be parsed.
+    /// Returns an error if the request fails.
     pub async fn readonly_api_keys(&self) -> Result<Vec<ReadonlyApiKeyResponse>> {
         let request = self
             .client()
@@ -2098,7 +2091,7 @@ impl<K: Kind> Client<Authenticated<K>> {
     ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the key cannot be deleted.
+    /// Returns an error if the request fails.
     pub async fn delete_readonly_api_key(&self, key: &str) -> Result<()> {
         let mut request = self
             .client()
@@ -2116,11 +2109,11 @@ impl<K: Kind> Client<Authenticated<K>> {
         Ok(())
     }
 
-    /// Gets pre-migration orders (legacy V1 orders) for the authenticated user.
+    /// Gets pre-migration orders for the authenticated user.
     ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the response cannot be parsed.
+    /// Returns an error if the request fails.
     pub async fn pre_migration_orders(
         &self,
         next_cursor: Option<String>,
@@ -2141,17 +2134,13 @@ impl<K: Kind> Client<Authenticated<K>> {
         crate::request(&self.inner.client, request, Some(headers)).await
     }
 
-    /// Gets the builder fee rate for a given builder code, with local caching.
+    /// Gets the builder fee rate for a given builder code.
     ///
-    /// The server returns fee rates in basis points. The response contains the raw
-    /// BPS values; callers should divide by 10000 to get decimal rates.
-    ///
-    /// Results are cached per builder code. Use [`Client::invalidate_internal_caches`]
-    /// to clear.
+    /// Returns fee rates in basis points. Results are cached per builder code.
     ///
     /// # Errors
     ///
-    /// Returns an error if the HTTP request fails or the response cannot be parsed.
+    /// Returns an error if the request fails.
     pub async fn builder_fee_rate(&self, builder_code: B256) -> Result<BuilderFeeRateResponse> {
         if let Some(cached) = self.inner.builder_fee_rates.get(&builder_code) {
             return Ok(cached.clone());
@@ -2463,6 +2452,7 @@ impl Client<Authenticated<Builder>> {
 }
 
 #[cfg(feature = "rfq")]
+#[expect(clippy::multiple_inherent_impl, reason = "RFQ methods must be in a separate impl block due to the feature gate")]
 impl<K: Kind> Client<Authenticated<K>> {
     /// Creates an RFQ Request to buy or sell outcome tokens.
     ///

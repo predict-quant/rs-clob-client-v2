@@ -1415,7 +1415,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/auth/api-keys")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE);
             then.status(StatusCode::OK)
@@ -1440,7 +1440,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(DELETE)
                 .path("/auth/api-key")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE);
             then.status(StatusCode::OK).body("\"\"");
@@ -1461,7 +1461,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/auth/ban-status/closed-only")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE);
             then.status(StatusCode::OK)
@@ -1561,7 +1561,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(POST)
                 .path("/order")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .json_body(json!({
@@ -1621,7 +1621,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(POST)
                 .path("/order")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE);
             then.status(StatusCode::OK).json_body(json!({
@@ -1685,7 +1685,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/data/order/1")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE);
             then.status(StatusCode::OK).json_body(json);
@@ -1755,7 +1755,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/data/orders")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("id", "1");
@@ -1805,7 +1805,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(DELETE)
                 .path("/order")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .json_body(json!({ "orderId": "1" }));
@@ -1841,7 +1841,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(DELETE)
                 .path("/order")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .json_body(json!({ "orderId": "1" }));
@@ -1877,7 +1877,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(DELETE)
                 .path("/orders")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .json_body(json!(["1"]));
@@ -1906,7 +1906,7 @@ mod authenticated {
 
         let mock = server.mock(|when, then| {
             when.method(DELETE)
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .path("/cancel-all");
@@ -1943,7 +1943,7 @@ mod authenticated {
 
         let mock = server.mock(|when, then| {
             when.method(DELETE)
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .path("/cancel-market-orders");
@@ -1975,7 +1975,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/data/trades")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("id", "1")
@@ -2109,7 +2109,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/notifications")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("signature_type", (SignatureType::Eoa as u8).to_string());
@@ -2197,7 +2197,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(DELETE)
                 .path("/notifications")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("ids", "1,2");
@@ -2222,7 +2222,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/balance-allowance")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("asset_type", "COLLATERAL")
@@ -2260,7 +2260,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/balance-allowance/update")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("asset_type", "COLLATERAL")
@@ -2288,7 +2288,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/order-scoring")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("order_id", "1");
@@ -2315,7 +2315,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(POST)
                 .path("/orders-scoring")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .json_body(json!(["1"]));
@@ -2343,7 +2343,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/rewards/user")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("date", date.to_string())
@@ -2398,7 +2398,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/rewards/user/total")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("date", date.to_string())
@@ -2439,7 +2439,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/rewards/user/total")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("date", today.date_naive().to_string())
@@ -2587,7 +2587,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/rewards/user/percentages")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("signature_type", "0");
@@ -2612,7 +2612,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/rewards/markets/current")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE);
             then.status(StatusCode::OK).json_body(json!({
@@ -2691,7 +2691,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/rewards/markets/1")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .query_param("next_cursor", "1");
@@ -2821,7 +2821,7 @@ mod authenticated {
         let mock = server.mock(|when, then| {
             when.method(POST)
                 .path("/v1/heartbeats")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .json_body(json!({
@@ -2967,7 +2967,7 @@ mod builder_authenticated {
         let mock4 = server.mock(|when, then| {
             when.method(httpmock::Method::GET)
                 .path("/auth/builder-api-key")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .header(POLY_BUILDER_API_KEY, BUILDER_API_KEY)
@@ -3053,7 +3053,7 @@ mod builder_authenticated {
         let mock4 = server.mock(|when, then| {
             when.method(DELETE)
                 .path("/auth/builder-api-key")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .header(POLY_BUILDER_API_KEY, BUILDER_API_KEY)
@@ -3123,7 +3123,7 @@ mod builder_authenticated {
         let mock4 = server.mock(|when, then| {
             when.method(httpmock::Method::GET)
                 .path("/builder/trades")
-                .header(POLY_ADDRESS, client.address().to_string().to_lowercase())
+                .header(POLY_ADDRESS, client.address().to_checksum(None))
                 .header(POLY_API_KEY, API_KEY)
                 .header(POLY_PASSPHRASE, PASSPHRASE)
                 .header(POLY_BUILDER_API_KEY, BUILDER_API_KEY)
