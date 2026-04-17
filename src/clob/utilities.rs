@@ -82,7 +82,11 @@ pub fn orderbook_summary_hash(orderbook: &OrderBookSummaryResponse) -> String {
         if i > 0 {
             json.push(',');
         }
-        let _ = write!(json, "{{\"price\":\"{}\",\"size\":\"{}\"}}", o.price, o.size);
+        let _ = write!(
+            json,
+            "{{\"price\":\"{}\",\"size\":\"{}\"}}",
+            o.price, o.size
+        );
     }
     json.push(']');
 
@@ -91,7 +95,11 @@ pub fn orderbook_summary_hash(orderbook: &OrderBookSummaryResponse) -> String {
         if i > 0 {
             json.push(',');
         }
-        let _ = write!(json, "{{\"price\":\"{}\",\"size\":\"{}\"}}", o.price, o.size);
+        let _ = write!(
+            json,
+            "{{\"price\":\"{}\",\"size\":\"{}\"}}",
+            o.price, o.size
+        );
     }
     json.push(']');
 

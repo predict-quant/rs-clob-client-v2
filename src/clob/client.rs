@@ -2452,7 +2452,10 @@ impl Client<Authenticated<Builder>> {
 }
 
 #[cfg(feature = "rfq")]
-#[expect(clippy::multiple_inherent_impl, reason = "RFQ methods must be in a separate impl block due to the feature gate")]
+#[expect(
+    clippy::multiple_inherent_impl,
+    reason = "RFQ methods must be in a separate impl block due to the feature gate"
+)]
 impl<K: Kind> Client<Authenticated<K>> {
     /// Creates an RFQ Request to buy or sell outcome tokens.
     ///
