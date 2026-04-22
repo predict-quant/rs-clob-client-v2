@@ -718,7 +718,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(10_520_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(21_040_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -759,7 +759,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(11_782_400));
             assert_eq!(signable_order.order().takerAmount, U256::from(21_040_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -800,7 +800,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(1_178_240));
             assert_eq!(signable_order.order().takerAmount, U256::from(21_040_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -841,7 +841,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(117_824));
             assert_eq!(signable_order.order().takerAmount, U256::from(21_040_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -984,7 +984,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(21_040_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(10_520_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -1025,7 +1025,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(21_040_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(11_782_400));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -1066,7 +1066,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(21_040_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(1_178_240));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -1107,7 +1107,7 @@ mod limit {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(21_040_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(117_824));
-            assert_eq!(signable_order.payload.expiration, U256::from(50000));
+            assert_eq!(signable_order.v2().expiration, U256::from(50000));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -1264,7 +1264,7 @@ mod limit {
         assert_eq!(signable_order.order().tokenId, token_1());
         assert_eq!(signable_order.order().makerAmount, U256::from(51_200_000));
         assert_eq!(signable_order.order().takerAmount, U256::from(100_000_000));
-        assert_eq!(signable_order.payload.expiration, U256::ZERO);
+        assert_eq!(signable_order.v2().expiration, U256::ZERO);
 
         assert_eq!(signable_order.order().side, Side::Buy as u8);
         assert_eq!(
@@ -1286,7 +1286,7 @@ mod limit {
         assert_eq!(signable_order.order().tokenId, token_2());
         assert_eq!(signable_order.order().makerAmount, U256::from(9_999_600));
         assert_eq!(signable_order.order().takerAmount, U256::from(12_820_000));
-        assert_eq!(signable_order.payload.expiration, U256::ZERO);
+        assert_eq!(signable_order.v2().expiration, U256::ZERO);
 
         assert_eq!(signable_order.order().side, Side::Buy as u8);
         assert_eq!(
@@ -1321,6 +1321,7 @@ mod market {
         asks: &[OrderSummary],
     ) {
         let minimum_tick_size = TickSize::Tenth;
+        crate::common::ensure_version(server, 2);
 
         server.mock(|when, then| {
             when.method(httpmock::Method::GET)
@@ -1481,7 +1482,7 @@ mod market {
                 );
                 assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000)); // 100 USDC
                 assert_eq!(signable_order.order().takerAmount, U256::from(200_000_000)); // 200 `token_1()` tokens
-                assert_eq!(signable_order.payload.expiration, U256::ZERO);
+                assert_eq!(signable_order.v2().expiration, U256::ZERO);
 
                 assert_eq!(signable_order.order().side, Side::Buy as u8);
                 assert_eq!(
@@ -1705,7 +1706,7 @@ mod market {
                 );
                 assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000)); // 100 USDC
                 assert_eq!(signable_order.order().takerAmount, U256::from(200_000_000)); // 200 `token_1()` tokens
-                assert_eq!(signable_order.payload.expiration, U256::ZERO);
+                assert_eq!(signable_order.v2().expiration, U256::ZERO);
 
                 assert_eq!(signable_order.order().side, Side::Buy as u8);
                 assert_eq!(
@@ -1935,7 +1936,7 @@ mod market {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(200_000_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -1985,7 +1986,7 @@ mod market {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(178_571_400));
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -2038,7 +2039,7 @@ mod market {
                 signable_order.order().takerAmount,
                 U256::from(1_785_714_280)
             );
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -2091,7 +2092,7 @@ mod market {
                 signable_order.order().takerAmount,
                 U256::from(17_857_142_857_u64)
             );
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Buy as u8);
             assert_eq!(
@@ -2368,7 +2369,7 @@ mod market {
                 );
                 assert_eq!(maker_amount, U256::from(100_000_000)); // 100 `token_1()` tokens
                 assert_eq!(taker_amount, U256::from(50_000_000)); // 50 USDC
-                assert_eq!(signable_order.payload.expiration, U256::ZERO);
+                assert_eq!(signable_order.v2().expiration, U256::ZERO);
 
                 assert_eq!(signable_order.order().side, Side::Sell as u8);
                 assert_eq!(
@@ -2638,7 +2639,7 @@ mod market {
                 );
                 assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000)); // 100 USDC
                 assert_eq!(signable_order.order().takerAmount, U256::from(40_000_000)); // 40 `token_1()` tokens
-                assert_eq!(signable_order.payload.expiration, U256::ZERO);
+                assert_eq!(signable_order.v2().expiration, U256::ZERO);
 
                 assert_eq!(signable_order.order().side, Side::Sell as u8);
                 assert_eq!(
@@ -2913,7 +2914,7 @@ mod market {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(50_000_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -2963,7 +2964,7 @@ mod market {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(56_000_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -3013,7 +3014,7 @@ mod market {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(5_600_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -3063,7 +3064,7 @@ mod market {
             assert_eq!(signable_order.order().tokenId, token_1());
             assert_eq!(signable_order.order().makerAmount, U256::from(100_000_000));
             assert_eq!(signable_order.order().takerAmount, U256::from(560_000));
-            assert_eq!(signable_order.payload.expiration, U256::from(0));
+            assert_eq!(signable_order.v2().expiration, U256::from(0));
 
             assert_eq!(signable_order.order().side, Side::Sell as u8);
             assert_eq!(
@@ -3187,8 +3188,10 @@ mod v2 {
         token_2,
     };
 
-    /// V2 orders only need neg-risk + tick-size mocks (no fee-rate).
+    /// V2 orders only need `/version`, neg-risk, and tick-size mocks.
     fn ensure_requirements_v2(server: &MockServer, token_id: U256, tick_size: TickSize) {
+        crate::common::ensure_version(server, 2);
+
         server.mock(|when, then| {
             when.method(httpmock::Method::GET).path("/neg-risk");
             then.status(StatusCode::OK)
@@ -3225,8 +3228,8 @@ mod v2 {
                 .await?;
 
             // Should be a V2 payload (default)
-            let order = &signable.payload.order;
-            let expiration = &signable.payload.expiration;
+            let order = &signable.v2().order;
+            let expiration = &signable.v2().expiration;
             assert_eq!(order.side, Side::Buy as u8);
             assert_eq!(order.signatureType, SignatureType::Eoa as u8);
             assert_eq!(order.metadata, B256::ZERO);
@@ -3258,7 +3261,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.side, Side::Sell as u8);
             // maker_amount = 100 shares = 100_000_000
             assert_eq!(order.makerAmount, U256::from(100_000_000_u64));
@@ -3289,7 +3292,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.metadata, metadata);
             assert_eq!(order.builder, builder_code);
 
@@ -3316,7 +3319,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let exp = &signable.payload.expiration;
+            let exp = &signable.v2().expiration;
             assert_eq!(*exp, U256::from(1_700_000_000_u64));
             assert_eq!(signable.order_type, OrderType::GTD);
 
@@ -3380,7 +3383,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.maker, funder);
             assert_eq!(order.signer, signer.address());
             assert_ne!(order.maker, order.signer);
@@ -3424,7 +3427,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.signatureType, SignatureType::Poly1271 as u8);
 
             Ok(())
@@ -3526,7 +3529,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.salt, U256::from(42));
 
             Ok(())
@@ -3549,7 +3552,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             // 100 * 0.5 = 50 USDC = 50_000_000
             assert_eq!(order.makerAmount, U256::from(50_000_000_u64));
 
@@ -3565,7 +3568,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             // 100 * 0.512 = 51.2 USDC = 51_200_000
             assert_eq!(order.makerAmount, U256::from(51_200_000_u64));
 
@@ -3623,6 +3626,7 @@ mod v2 {
             asks: &[OrderSummary],
         ) {
             let minimum_tick_size = TickSize::Tenth;
+            crate::common::ensure_version(server, 2);
 
             server.mock(|when, then| {
                 when.method(httpmock::Method::GET)
@@ -3676,8 +3680,8 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
-            let expiration = &signable.payload.expiration;
+            let order = &signable.v2().order;
+            let expiration = &signable.v2().expiration;
             assert_eq!(order.side, Side::Buy as u8);
             assert_eq!(*expiration, U256::ZERO);
             assert!(!order.timestamp.is_zero());
@@ -3716,7 +3720,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.side, Side::Sell as u8);
             // maker = 100 shares, taker = 100 * 0.4 (cutoff) = 40 USDC
             assert_eq!(order.makerAmount, U256::from(100_000_000_u64));
@@ -3753,7 +3757,7 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order = &signable.payload.order;
+            let order = &signable.v2().order;
             assert_eq!(order.metadata, metadata);
             assert_eq!(order.builder, builder_code);
             assert_eq!(signable.defer_exec, Some(true));
@@ -3964,8 +3968,8 @@ mod v2 {
                 .build()
                 .await?;
 
-            let order1 = &signable1.payload.order;
-            let order2 = &signable2.payload.order;
+            let order1 = &signable1.v2().order;
+            let order2 = &signable2.v2().order;
 
             // Salt should be the same (fixed generator)
             assert_eq!(order1.salt, order2.salt);
@@ -3978,6 +3982,781 @@ mod v2 {
             assert!(!order2.timestamp.is_zero());
 
             Ok(())
+        }
+    }
+}
+
+/// Dual-version tests: verify that [`OrderBuilder::build`] dispatches on `/version`
+/// and produces a V1 payload (12-field signed struct, domain v"1", V1 exchange contract).
+mod v1 {
+    use alloy::primitives::{Signature, U256};
+    use httpmock::MockServer;
+    use polymarket_client_sdk_v2::clob::types::{
+        OrderPayload, OrderType, Side, SignatureType, SignedOrder, TickSize,
+    };
+    use polymarket_client_sdk_v2::error::Validation;
+    use polymarket_client_sdk_v2::types::{Address, address};
+    use reqwest::StatusCode;
+    use rust_decimal_macros::dec;
+    use serde_json::{json, to_value};
+
+    use super::*;
+    use crate::common::{API_KEY, create_authenticated, ensure_version, token_1, token_2};
+
+    /// Mocks `/version` (returns 1), `/neg-risk`, `/tick-size`, and `/fee-rate` for a V1 build.
+    fn ensure_requirements_v1(
+        server: &MockServer,
+        token_id: U256,
+        tick_size: TickSize,
+        fee_rate_bps: u32,
+    ) {
+        ensure_version(server, 1);
+
+        server.mock(|when, then| {
+            when.method(httpmock::Method::GET).path("/neg-risk");
+            then.status(StatusCode::OK)
+                .json_body(json!({ "neg_risk": false }));
+        });
+
+        server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path("/tick-size")
+                .query_param("token_id", token_id.to_string());
+            then.status(StatusCode::OK).json_body(json!({
+                "minimum_tick_size": tick_size.as_decimal(),
+            }));
+        });
+
+        server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path("/fee-rate")
+                .query_param("token_id", token_id.to_string());
+            then.status(StatusCode::OK)
+                .json_body(json!({ "base_fee": fee_rate_bps }));
+        });
+    }
+
+    mod limit {
+        use super::*;
+
+        #[tokio::test]
+        async fn v1_limit_buy_dispatches_to_v1_payload() -> anyhow::Result<()> {
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 10);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            assert_eq!(v1.side, Side::Buy as u8);
+            assert_eq!(v1.tokenId, token_1());
+            assert_eq!(v1.taker, Address::ZERO);
+            assert_eq!(v1.nonce, U256::ZERO);
+            assert_eq!(v1.feeRateBps, U256::from(10));
+            assert_eq!(v1.expiration, U256::ZERO);
+            // 100 shares × $0.50 = $50 USDC maker side, 100 taker tokens
+            assert_eq!(v1.makerAmount, U256::from(50_000_000_u64));
+            assert_eq!(v1.takerAmount, U256::from(100_000_000_u64));
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_limit_sell_dispatches_to_v1_payload() -> anyhow::Result<()> {
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            ensure_requirements_v1(&server, token_2(), TickSize::Hundredth, 0);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_2())
+                .price(dec!(0.25))
+                .size(dec!(200))
+                .side(Side::Sell)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            assert_eq!(v1.side, Side::Sell as u8);
+            assert_eq!(v1.feeRateBps, U256::ZERO);
+            // 200 shares, $0.25 each → maker=200, taker=$50
+            assert_eq!(v1.makerAmount, U256::from(200_000_000_u64));
+            assert_eq!(v1.takerAmount, U256::from(50_000_000_u64));
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_with_custom_taker_and_nonce() -> anyhow::Result<()> {
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 0);
+
+            let taker = address!("0x995c9b1f779c04e65AF8ea3360F96c43b5e62316");
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .taker(taker)
+                .nonce(42)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            assert_eq!(v1.taker, taker);
+            assert_eq!(v1.nonce, U256::from(42_u64));
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_with_matching_fee_rate_override_succeeds() -> anyhow::Result<()> {
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 10);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .fee_rate_bps(10)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            assert_eq!(v1.feeRateBps, U256::from(10));
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_with_mismatched_fee_rate_override_rejects() -> anyhow::Result<()> {
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 10);
+
+            let err = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .fee_rate_bps(20) // disagrees with the market's 10 bps
+                .build()
+                .await
+                .unwrap_err();
+
+            let validation = err
+                .downcast_ref::<Validation>()
+                .expect("expected Validation error");
+            assert!(
+                validation.reason.contains("invalid user-provided fee rate"),
+                "unexpected reason: {}",
+                validation.reason,
+            );
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_rejects_poly1271_signature_type() -> anyhow::Result<()> {
+            use alloy::signers::Signer as _;
+
+            let server = MockServer::start();
+            // Authenticate with Poly1271 signature type before entering the V1 path.
+            ensure_version(&server, 1);
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/auth/derive-api-key");
+                then.status(StatusCode::OK).json_body(json!({
+                    "apiKey": API_KEY.to_string(),
+                    "passphrase": crate::common::PASSPHRASE,
+                    "secret": crate::common::SECRET,
+                }));
+            });
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET).path("/neg-risk");
+                then.status(StatusCode::OK)
+                    .json_body(json!({ "neg_risk": false }));
+            });
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET).path("/tick-size");
+                then.status(StatusCode::OK).json_body(json!({
+                    "minimum_tick_size": TickSize::Hundredth.as_decimal(),
+                }));
+            });
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET).path("/fee-rate");
+                then.status(StatusCode::OK)
+                    .json_body(json!({ "base_fee": 0 }));
+            });
+
+            let signer = alloy::signers::local::LocalSigner::from_str(crate::common::PRIVATE_KEY)?
+                .with_chain_id(Some(polymarket_client_sdk_v2::POLYGON));
+            let funder = address!("0xd1615A7B6146cDbA40a559eC876A3bcca4050890");
+            let client = polymarket_client_sdk_v2::clob::Client::new(
+                &server.base_url(),
+                polymarket_client_sdk_v2::clob::Config::default(),
+            )?
+            .authentication_builder(&signer)
+            .funder(funder)
+            .signature_type(SignatureType::Poly1271)
+            .authenticate()
+            .await?;
+
+            let err = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .build()
+                .await
+                .unwrap_err();
+
+            let validation = err
+                .downcast_ref::<Validation>()
+                .expect("expected Validation error");
+            assert!(
+                validation.reason.contains("POLY_1271"),
+                "unexpected reason: {}",
+                validation.reason,
+            );
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_with_expiration_gtd() -> anyhow::Result<()> {
+            use chrono::DateTime;
+
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 0);
+
+            let exp = DateTime::from_timestamp(1_800_000_000, 0).unwrap();
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .order_type(OrderType::GTD)
+                .expiration(exp)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            assert_eq!(v1.expiration, U256::from(1_800_000_000_u64));
+            assert_eq!(signable.order_type, OrderType::GTD);
+
+            Ok(())
+        }
+    }
+
+    mod market {
+        use super::*;
+
+        fn ensure_requirements_for_market_price_v1(
+            server: &MockServer,
+            token_id: U256,
+            bids: &[polymarket_client_sdk_v2::clob::types::response::OrderSummary],
+            asks: &[polymarket_client_sdk_v2::clob::types::response::OrderSummary],
+        ) {
+            let minimum_tick_size = TickSize::Tenth;
+            ensure_version(server, 1);
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/book")
+                    .query_param("token_id", token_id.to_string());
+                then.status(StatusCode::OK).json_body(json!({
+                    "market": "0xbd31dc8a20211944f6b70f31557f1001557b59905b7738480ca09bd4532f84af",
+                    "asset_id": token_id,
+                    "timestamp": "1000",
+                    "bids": bids,
+                    "asks": asks,
+                    "min_order_size": "5",
+                    "neg_risk": false,
+                    "tick_size": minimum_tick_size.as_decimal(),
+                }));
+            });
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/tick-size")
+                    .query_param("token_id", token_id.to_string());
+                then.status(StatusCode::OK).json_body(json!({
+                    "minimum_tick_size": minimum_tick_size.as_decimal(),
+                }));
+            });
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET).path("/neg-risk");
+                then.status(StatusCode::OK)
+                    .json_body(json!({ "neg_risk": false }));
+            });
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/fee-rate")
+                    .query_param("token_id", token_id.to_string());
+                then.status(StatusCode::OK)
+                    .json_body(json!({ "base_fee": 5 }));
+            });
+        }
+
+        #[tokio::test]
+        async fn v1_market_buy_usdc() -> anyhow::Result<()> {
+            use polymarket_client_sdk_v2::clob::types::response::OrderSummary;
+
+            let server = MockServer::start();
+            let client = create_authenticated(&server).await?;
+
+            let asks = vec![
+                OrderSummary::builder()
+                    .price(dec!(0.5))
+                    .size(dec!(1000))
+                    .build(),
+            ];
+            ensure_requirements_for_market_price_v1(&server, token_1(), &[], &asks);
+
+            let signable = client
+                .market_order()
+                .token_id(token_1())
+                .side(Side::Buy)
+                .amount(polymarket_client_sdk_v2::clob::types::Amount::usdc(dec!(
+                    50
+                ))?)
+                .order_type(OrderType::FOK)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            assert_eq!(v1.feeRateBps, U256::from(5));
+            assert_eq!(v1.side, Side::Buy as u8);
+
+            Ok(())
+        }
+    }
+
+    mod serialization {
+        use super::*;
+
+        #[test]
+        fn v1_signed_order_json_has_v1_fields_and_omits_v2_fields() {
+            let mut order = polymarket_client_sdk_v2::clob::types::OrderV1::default();
+            order.salt = U256::from(99_u64);
+            order.maker = address!("0xaDEFf2158d668f64308C62ef227C5CcaCAAf976D");
+            order.signer = address!("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
+            order.taker = address!("0x995c9b1f779c04e65AF8ea3360F96c43b5e62316");
+            order.tokenId = U256::from(777_u64);
+            order.makerAmount = U256::from(25_000_000_u64);
+            order.takerAmount = U256::from(50_000_000_u64);
+            order.expiration = U256::from(1_700_000_000_u64);
+            order.nonce = U256::from(7_u64);
+            order.feeRateBps = U256::from(15_u64);
+            order.side = Side::Sell as u8;
+            order.signatureType = SignatureType::Proxy as u8;
+
+            let signed = SignedOrder::builder()
+                .payload(OrderPayload::new_v1(order))
+                .signature(Signature::new(U256::from(1), U256::from(2), false))
+                .order_type(OrderType::GTC)
+                .owner(API_KEY)
+                .build();
+
+            let value = to_value(&signed).unwrap();
+            let obj = value.as_object().unwrap();
+            let order_obj = obj["order"].as_object().unwrap();
+
+            // V1-specific fields present
+            assert_eq!(
+                order_obj["taker"],
+                "0x995c9b1f779c04e65af8ea3360f96c43b5e62316"
+            );
+            assert_eq!(order_obj["nonce"], "7");
+            assert_eq!(order_obj["feeRateBps"], "15");
+            assert_eq!(order_obj["expiration"], "1700000000");
+
+            // V2-only fields must be absent
+            assert!(!order_obj.contains_key("timestamp"));
+            assert!(!order_obj.contains_key("metadata"));
+            assert!(!order_obj.contains_key("builder"));
+
+            // Shared fields
+            assert_eq!(order_obj["salt"], 99);
+            assert_eq!(order_obj["tokenId"], "777");
+            assert_eq!(order_obj["makerAmount"], "25000000");
+            assert_eq!(order_obj["takerAmount"], "50000000");
+            assert_eq!(order_obj["side"], "SELL");
+            assert_eq!(order_obj["signatureType"], 1);
+
+            // Outer wrapper
+            assert_eq!(obj["orderType"], "GTC");
+            assert!(obj.contains_key("owner"));
+        }
+    }
+
+    mod signing {
+        use alloy::signers::Signer as _;
+        use alloy::signers::local::LocalSigner;
+        use polymarket_client_sdk_v2::POLYGON;
+        use polymarket_client_sdk_v2::clob::{Client, Config};
+
+        use super::*;
+        use crate::common::{PASSPHRASE, POLY_ADDRESS, PRIVATE_KEY, SECRET};
+
+        /// The V1 exchange contract on Polygon mainnet.
+        const V1_EXCHANGE_POLYGON: Address = address!("0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E");
+
+        #[tokio::test]
+        async fn v1_sign_uses_v1_domain_and_exchange() -> anyhow::Result<()> {
+            use alloy::dyn_abi::Eip712Domain;
+            use alloy::sol_types::SolStruct as _;
+            use std::borrow::Cow;
+
+            let server = MockServer::start();
+            let signer = LocalSigner::from_str(PRIVATE_KEY)?.with_chain_id(Some(POLYGON));
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/auth/derive-api-key")
+                    .header(POLY_ADDRESS, signer.address().to_string().to_lowercase());
+                then.status(StatusCode::OK).json_body(json!({
+                    "apiKey": API_KEY.to_string(),
+                    "passphrase": PASSPHRASE,
+                    "secret": SECRET,
+                }));
+            });
+
+            let client = Client::new(&server.base_url(), Config::default())?
+                .authentication_builder(&signer)
+                .salt_generator(|| 1)
+                .authenticate()
+                .await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 0);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .build()
+                .await?;
+
+            let signed = client.sign(&signer, signable.clone()).await?;
+
+            // Recompute the expected signature using the explicit V1 domain and
+            // verify it matches what `client.sign` produced. This anchors the
+            // contract + domain-version selection end-to-end.
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            let expected_domain = Eip712Domain {
+                name: Some(Cow::Borrowed("Polymarket CTF Exchange")),
+                version: Some(Cow::Borrowed("1")),
+                chain_id: Some(U256::from(POLYGON)),
+                verifying_contract: Some(V1_EXCHANGE_POLYGON),
+                ..Eip712Domain::default()
+            };
+            let expected_sig = signer
+                .sign_hash(&v1.eip712_signing_hash(&expected_domain))
+                .await?;
+
+            assert_eq!(signed.signature, expected_sig);
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v1_sign_rejects_if_signature_types_diverge() -> anyhow::Result<()> {
+            // Sanity: a signature produced against the V2 domain must NOT verify as V1.
+            use alloy::dyn_abi::Eip712Domain;
+            use alloy::sol_types::SolStruct as _;
+            use std::borrow::Cow;
+
+            let server = MockServer::start();
+            let signer = LocalSigner::from_str(PRIVATE_KEY)?.with_chain_id(Some(POLYGON));
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/auth/derive-api-key")
+                    .header(POLY_ADDRESS, signer.address().to_string().to_lowercase());
+                then.status(StatusCode::OK).json_body(json!({
+                    "apiKey": API_KEY.to_string(),
+                    "passphrase": PASSPHRASE,
+                    "secret": SECRET,
+                }));
+            });
+
+            let client = Client::new(&server.base_url(), Config::default())?
+                .authentication_builder(&signer)
+                .salt_generator(|| 1)
+                .authenticate()
+                .await?;
+
+            ensure_requirements_v1(&server, token_1(), TickSize::Hundredth, 0);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .build()
+                .await?;
+
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+            let v2_like_domain = Eip712Domain {
+                name: Some(Cow::Borrowed("Polymarket CTF Exchange")),
+                version: Some(Cow::Borrowed("2")),
+                chain_id: Some(U256::from(POLYGON)),
+                verifying_contract: Some(V1_EXCHANGE_POLYGON),
+                ..Eip712Domain::default()
+            };
+            let wrong_domain_sig = signer
+                .sign_hash(&v1.eip712_signing_hash(&v2_like_domain))
+                .await?;
+
+            let real = client.sign(&signer, signable).await?;
+            assert_ne!(real.signature, wrong_domain_sig);
+
+            Ok(())
+        }
+
+        /// The V1 neg-risk exchange contract on Polygon mainnet.
+        const V1_NEG_RISK_EXCHANGE_POLYGON: Address =
+            address!("0xC5d563A36AE78145C45a50134d48A1215220f80a");
+        /// The V2 exchange contract on Polygon mainnet.
+        const V2_EXCHANGE_POLYGON: Address =
+            address!("0xE111180000d2663C0091e4f400237545B87B996B");
+        /// The V2 neg-risk exchange contract on Polygon mainnet.
+        const V2_NEG_RISK_EXCHANGE_POLYGON: Address =
+            address!("0xe2222d279d744050d28e00520010520000310F59");
+
+        /// Sets up everything a V1 build needs, with neg-risk toggled on.
+        fn ensure_requirements_v1_neg_risk(
+            server: &MockServer,
+            token_id: U256,
+            tick_size: TickSize,
+        ) {
+            ensure_version(server, 1);
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET).path("/neg-risk");
+                then.status(StatusCode::OK)
+                    .json_body(json!({ "neg_risk": true }));
+            });
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/tick-size")
+                    .query_param("token_id", token_id.to_string());
+                then.status(StatusCode::OK).json_body(json!({
+                    "minimum_tick_size": tick_size.as_decimal(),
+                }));
+            });
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/fee-rate")
+                    .query_param("token_id", token_id.to_string());
+                then.status(StatusCode::OK).json_body(json!({ "base_fee": 0 }));
+            });
+        }
+
+        fn ensure_requirements_v2_neg_risk(
+            server: &MockServer,
+            token_id: U256,
+            tick_size: TickSize,
+        ) {
+            ensure_version(server, 2);
+
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET).path("/neg-risk");
+                then.status(StatusCode::OK)
+                    .json_body(json!({ "neg_risk": true }));
+            });
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/tick-size")
+                    .query_param("token_id", token_id.to_string());
+                then.status(StatusCode::OK).json_body(json!({
+                    "minimum_tick_size": tick_size.as_decimal(),
+                }));
+            });
+        }
+
+        #[tokio::test]
+        async fn v1_neg_risk_signs_against_v1_neg_risk_exchange() -> anyhow::Result<()> {
+            use alloy::dyn_abi::Eip712Domain;
+            use alloy::sol_types::SolStruct as _;
+            use std::borrow::Cow;
+
+            let server = MockServer::start();
+            let signer = LocalSigner::from_str(PRIVATE_KEY)?.with_chain_id(Some(POLYGON));
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/auth/derive-api-key");
+                then.status(StatusCode::OK).json_body(json!({
+                    "apiKey": API_KEY.to_string(),
+                    "passphrase": PASSPHRASE,
+                    "secret": SECRET,
+                }));
+            });
+
+            let client = Client::new(&server.base_url(), Config::default())?
+                .authentication_builder(&signer)
+                .salt_generator(|| 1)
+                .authenticate()
+                .await?;
+
+            ensure_requirements_v1_neg_risk(&server, token_1(), TickSize::Hundredth);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .build()
+                .await?;
+            let v1 = signable.payload.as_v1().expect("expected V1 payload");
+
+            let expected = Eip712Domain {
+                name: Some(Cow::Borrowed("Polymarket CTF Exchange")),
+                version: Some(Cow::Borrowed("1")),
+                chain_id: Some(U256::from(POLYGON)),
+                verifying_contract: Some(V1_NEG_RISK_EXCHANGE_POLYGON),
+                ..Eip712Domain::default()
+            };
+            let expected_sig = signer
+                .sign_hash(&v1.eip712_signing_hash(&expected))
+                .await?;
+
+            let signed = client.sign(&signer, signable).await?;
+            assert_eq!(signed.signature, expected_sig);
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn v2_neg_risk_signs_against_v2_neg_risk_exchange() -> anyhow::Result<()> {
+            use alloy::dyn_abi::Eip712Domain;
+            use alloy::sol_types::SolStruct as _;
+            use std::borrow::Cow;
+
+            let server = MockServer::start();
+            let signer = LocalSigner::from_str(PRIVATE_KEY)?.with_chain_id(Some(POLYGON));
+            server.mock(|when, then| {
+                when.method(httpmock::Method::GET)
+                    .path("/auth/derive-api-key");
+                then.status(StatusCode::OK).json_body(json!({
+                    "apiKey": API_KEY.to_string(),
+                    "passphrase": PASSPHRASE,
+                    "secret": SECRET,
+                }));
+            });
+
+            let client = Client::new(&server.base_url(), Config::default())?
+                .authentication_builder(&signer)
+                .salt_generator(|| 1)
+                .authenticate()
+                .await?;
+
+            ensure_requirements_v2_neg_risk(&server, token_1(), TickSize::Hundredth);
+
+            let signable = client
+                .limit_order()
+                .token_id(token_1())
+                .price(dec!(0.5))
+                .size(dec!(100))
+                .side(Side::Buy)
+                .build()
+                .await?;
+            let v2 = &signable.v2().order;
+
+            let expected = Eip712Domain {
+                name: Some(Cow::Borrowed("Polymarket CTF Exchange")),
+                version: Some(Cow::Borrowed("2")),
+                chain_id: Some(U256::from(POLYGON)),
+                verifying_contract: Some(V2_NEG_RISK_EXCHANGE_POLYGON),
+                ..Eip712Domain::default()
+            };
+            let expected_sig = signer
+                .sign_hash(&v2.eip712_signing_hash(&expected))
+                .await?;
+
+            let signed = client.sign(&signer, signable).await?;
+            assert_eq!(signed.signature, expected_sig);
+
+            Ok(())
+        }
+
+        /// Proves the four contract×version combinations are distinct: a V2-normal
+        /// signature must not equal a V2-neg-risk signature (different exchange
+        /// addresses flow into the EIP-712 domain and therefore into the hash).
+        #[tokio::test]
+        async fn v2_neg_risk_and_v2_normal_signatures_diverge() -> anyhow::Result<()> {
+            use alloy::dyn_abi::Eip712Domain;
+            use alloy::sol_types::SolStruct as _;
+            use std::borrow::Cow;
+
+            let signer = LocalSigner::from_str(PRIVATE_KEY)?.with_chain_id(Some(POLYGON));
+            let v2_order = polymarket_client_sdk_v2::clob::types::OrderV2::default();
+
+            let normal_domain = Eip712Domain {
+                name: Some(Cow::Borrowed("Polymarket CTF Exchange")),
+                version: Some(Cow::Borrowed("2")),
+                chain_id: Some(U256::from(POLYGON)),
+                verifying_contract: Some(V2_EXCHANGE_POLYGON),
+                ..Eip712Domain::default()
+            };
+            let neg_risk_domain = Eip712Domain {
+                verifying_contract: Some(V2_NEG_RISK_EXCHANGE_POLYGON),
+                ..normal_domain.clone()
+            };
+
+            let normal_sig = signer
+                .sign_hash(&v2_order.eip712_signing_hash(&normal_domain))
+                .await?;
+            let neg_risk_sig = signer
+                .sign_hash(&v2_order.eip712_signing_hash(&neg_risk_domain))
+                .await?;
+
+            assert_ne!(normal_sig, neg_risk_sig);
+            Ok(())
+        }
+
+        /// Proves V1 and V2 have distinct EIP-712 typehashes even if the struct
+        /// field values happened to coincide. If the `sol!` Solidity type name were
+        /// accidentally unified, this assertion would fail.
+        #[test]
+        fn v1_and_v2_eip712_typehashes_differ() {
+            use alloy::sol_types::SolStruct as _;
+            let v1_hash = polymarket_client_sdk_v2::clob::types::OrderV1::eip712_type_hash(
+                &polymarket_client_sdk_v2::clob::types::OrderV1::default(),
+            );
+            let v2_hash = polymarket_client_sdk_v2::clob::types::OrderV2::eip712_type_hash(
+                &polymarket_client_sdk_v2::clob::types::OrderV2::default(),
+            );
+            assert_ne!(v1_hash, v2_hash);
         }
     }
 }

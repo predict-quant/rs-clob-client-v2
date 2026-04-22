@@ -54,7 +54,7 @@ use crate::clob::types::{
     RfqRequestsRequest,
 };
 use crate::clob::types::{
-    Amount, OrderType, Side, SignableOrder, SignatureType, SignedOrder, TickSize,
+    Amount, OrderPayload, OrderType, Side, SignableOrder, SignatureType, SignedOrder, TickSize,
 };
 use crate::error::{Error, Kind as ErrorKind, Synchronization};
 use crate::types::{Address, B256, Decimal};
@@ -64,6 +64,7 @@ use crate::{
 };
 
 const ORDER_NAME: Option<Cow<'static, str>> = Some(Cow::Borrowed("Polymarket CTF Exchange"));
+const VERSION_V1: Option<Cow<'static, str>> = Some(Cow::Borrowed("1"));
 const VERSION_V2: Option<Cow<'static, str>> = Some(Cow::Borrowed("2"));
 
 const TERMINAL_CURSOR: &str = "LTE="; // base64("-1")
@@ -930,6 +931,31 @@ impl<S: State> Client<S> {
         Ok(response)
     }
 
+    /// Resolves the V1 `feeRateBps` to apply to an order. Mirrors the TS client's
+    /// `_resolveFeeRateBps`: fetches the market rate via [`Self::fee_rate_bps`] and,
+    /// when the caller supplied an override, validates that it matches.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the market rate cannot be fetched, or if `user_fee_rate_bps`
+    /// disagrees with the market's non-zero fee rate.
+    pub(crate) async fn resolve_fee_rate_bps(
+        &self,
+        token_id: U256,
+        user_fee_rate_bps: Option<u32>,
+    ) -> Result<u32> {
+        let market_fee = self.fee_rate_bps(token_id).await?.base_fee;
+        if let Some(user) = user_fee_rate_bps
+            && market_fee > 0
+            && user != market_fee
+        {
+            return Err(Error::validation(format!(
+                "invalid user-provided fee rate {user}; market fee rate must be {market_fee}"
+            )));
+        }
+        Ok(market_fee)
+    }
+
     /// Returns the V2 platform-fee exponent (`fd.e`) for `token_id`. Defaults to `0` on
     /// legacy or fee-free markets.
     ///
@@ -1663,8 +1689,9 @@ impl<K: Kind> Client<Authenticated<K>> {
 
     /// Signs the provided [`SignableOrder`] using EIP-712 typed data signing.
     ///
-    /// Uses EIP-712 domain version `"2"` with the V2 exchange contract address.
-    /// The exchange contract is resolved from the chain ID and neg-risk status of the token.
+    /// The EIP-712 domain and verifying contract are selected from the order's version:
+    /// V2 orders sign against `exchange_v2` with domain version `"2"`; V1 orders sign
+    /// against the legacy `exchange` (or neg-risk variant) with domain version `"1"`.
     #[expect(
         clippy::missing_panics_doc,
         reason = "No need to publicly document as we are guarded by the typestate pattern. \
@@ -1684,27 +1711,45 @@ impl<K: Kind> Client<Authenticated<K>> {
             .chain_id()
             .expect("Validated not none in `authenticate`");
 
-        let order = &payload.order;
-        let neg_risk = self.neg_risk(order.tokenId).await?.neg_risk;
+        let token_id = match &payload {
+            OrderPayload::V1(p) => p.order.tokenId,
+            OrderPayload::V2(p) => p.order.tokenId,
+        };
+        let neg_risk = self.neg_risk(token_id).await?.neg_risk;
         let config = contract_config(chain_id, neg_risk)
             .ok_or(Error::missing_contract_config(chain_id, neg_risk))?;
-        let exchange_v2 = config.exchange_v2.ok_or_else(|| {
-            Error::validation(format!(
-                "No V2 exchange contract configured for chain_id={chain_id}, neg_risk={neg_risk}"
-            ))
-        })?;
 
-        let domain = Eip712Domain {
-            name: ORDER_NAME,
-            version: VERSION_V2,
-            chain_id: Some(U256::from(chain_id)),
-            verifying_contract: Some(exchange_v2),
-            ..Eip712Domain::default()
+        let signature = match &payload {
+            OrderPayload::V2(p) => {
+                let exchange = config.exchange_v2.ok_or_else(|| {
+                    Error::validation(format!(
+                        "No V2 exchange contract configured for chain_id={chain_id}, neg_risk={neg_risk}"
+                    ))
+                })?;
+                let domain = Eip712Domain {
+                    name: ORDER_NAME,
+                    version: VERSION_V2,
+                    chain_id: Some(U256::from(chain_id)),
+                    verifying_contract: Some(exchange),
+                    ..Eip712Domain::default()
+                };
+                signer
+                    .sign_hash(&p.order.eip712_signing_hash(&domain))
+                    .await?
+            }
+            OrderPayload::V1(p) => {
+                let domain = Eip712Domain {
+                    name: ORDER_NAME,
+                    version: VERSION_V1,
+                    chain_id: Some(U256::from(chain_id)),
+                    verifying_contract: Some(config.exchange),
+                    ..Eip712Domain::default()
+                };
+                signer
+                    .sign_hash(&p.order.eip712_signing_hash(&domain))
+                    .await?
+            }
         };
-
-        let signature = signer
-            .sign_hash(&order.eip712_signing_hash(&domain))
-            .await?;
 
         Ok(SignedOrder {
             payload,
@@ -2415,7 +2460,9 @@ impl<K: Kind> Client<Authenticated<K>> {
         next_cursor: Option<String>,
     ) -> Result<Page<BuilderTradeResponse>> {
         if builder_code == B256::ZERO {
-            return Err(Error::validation("builder_code is required and cannot be zero"));
+            return Err(Error::validation(
+                "builder_code is required and cannot be zero",
+            ));
         }
         let params = request.query_params(next_cursor.as_deref());
         let sep = if params.is_empty() { '?' } else { '&' };
@@ -2772,6 +2819,9 @@ impl<K: Kind> Client<Authenticated<K>> {
             builder_code: self.inner.config.builder_code,
             defer_exec: None,
             user_usdc_balance: None,
+            taker: None,
+            nonce: None,
+            fee_rate_bps: None,
             client: Client {
                 inner: Arc::clone(&self.inner),
                 #[cfg(feature = "heartbeats")]

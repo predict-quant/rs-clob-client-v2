@@ -14,7 +14,8 @@ use crate::clob::Client;
 use crate::clob::types::request::OrderBookSummaryRequest;
 use crate::clob::types::response::PostOrderResponse;
 use crate::clob::types::{
-    Amount, AmountInner, Order, OrderPayload, OrderType, Side, SignableOrder, SignatureType,
+    Amount, AmountInner, OrderPayload, OrderType, OrderV1, OrderV2, Side, SignableOrder,
+    SignatureType,
 };
 use crate::error::Error;
 use crate::types::{Address, Decimal};
@@ -54,6 +55,12 @@ pub struct OrderBuilder<OrderKind, K: AuthKind> {
     pub(crate) builder_code: Option<B256>,
     pub(crate) defer_exec: Option<bool>,
     pub(crate) user_usdc_balance: Option<Decimal>,
+    /// V1-only: explicit taker address. Defaults to the zero address (public order).
+    pub(crate) taker: Option<Address>,
+    /// V1-only: on-chain cancel nonce. Defaults to 0.
+    pub(crate) nonce: Option<u64>,
+    /// V1-only: caller-specified fee rate in bps. Must match the market rate when both are set.
+    pub(crate) fee_rate_bps: Option<u32>,
     pub(crate) _kind: PhantomData<OrderKind>,
 }
 
@@ -110,6 +117,101 @@ impl<OrderKind, K: AuthKind> OrderBuilder<OrderKind, K> {
     pub fn defer_exec(mut self, defer_exec: bool) -> Self {
         self.defer_exec = Some(defer_exec);
         self
+    }
+
+    /// V1-only: sets the order's `taker` address. Defaults to the zero address (public order).
+    /// Ignored when the server is running V2.
+    #[must_use]
+    pub fn taker(mut self, taker: Address) -> Self {
+        self.taker = Some(taker);
+        self
+    }
+
+    /// V1-only: sets the on-chain cancellation `nonce`. Defaults to 0.
+    /// Ignored when the server is running V2.
+    #[must_use]
+    pub fn nonce(mut self, nonce: u64) -> Self {
+        self.nonce = Some(nonce);
+        self
+    }
+
+    /// V1-only: sets the maker `feeRateBps`. When set, must equal the market's fee rate
+    /// (see `/fee-rate`) or `build()` rejects the order. Ignored when the server is running V2.
+    #[must_use]
+    pub fn fee_rate_bps(mut self, fee_rate_bps: u32) -> Self {
+        self.fee_rate_bps = Some(fee_rate_bps);
+        self
+    }
+
+    /// Assembles the [`OrderPayload`] for the server's current protocol version.
+    ///
+    /// The caller supplies values common to both versions; V1/V2-specific fields
+    /// (`taker`/`nonce`/`feeRateBps` vs `timestamp`/`metadata`/`builder`) are resolved
+    /// here from [`OrderBuilder`] state.
+    async fn build_payload(
+        &self,
+        token_id: U256,
+        side: Side,
+        maker_amount: u128,
+        taker_amount: u128,
+        salt: u64,
+        expiration: U256,
+    ) -> Result<OrderPayload> {
+        let version = self.client.resolve_version(false).await?;
+        let maker = self.funder.unwrap_or(self.signer);
+
+        match version {
+            1 => {
+                if matches!(self.signature_type, SignatureType::Poly1271) {
+                    return Err(Error::validation(
+                        "signature type POLY_1271 is not supported for V1 orders",
+                    ));
+                }
+                let fee_rate_bps = self
+                    .client
+                    .resolve_fee_rate_bps(token_id, self.fee_rate_bps)
+                    .await?;
+                Ok(OrderPayload::new_v1(OrderV1 {
+                    salt: U256::from(salt),
+                    maker,
+                    signer: self.signer,
+                    taker: self.taker.unwrap_or(Address::ZERO),
+                    tokenId: token_id,
+                    makerAmount: U256::from(maker_amount),
+                    takerAmount: U256::from(taker_amount),
+                    expiration,
+                    nonce: U256::from(self.nonce.unwrap_or(0)),
+                    feeRateBps: U256::from(fee_rate_bps),
+                    side: side as u8,
+                    signatureType: self.signature_type as u8,
+                }))
+            }
+            2 => {
+                let timestamp_ms = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .expect("time went backwards")
+                    .as_millis();
+                Ok(OrderPayload::new(
+                    OrderV2 {
+                        salt: U256::from(salt),
+                        maker,
+                        signer: self.signer,
+                        tokenId: token_id,
+                        makerAmount: U256::from(maker_amount),
+                        takerAmount: U256::from(taker_amount),
+                        side: side as u8,
+                        signatureType: self.signature_type as u8,
+                        timestamp: U256::from(timestamp_ms),
+                        metadata: self.metadata.unwrap_or(B256::ZERO),
+                        builder: self.builder_code.unwrap_or(B256::ZERO),
+                    },
+                    expiration,
+                ))
+            }
+            other => Err(Error::validation(format!(
+                "unsupported CLOB protocol version: {other}"
+            ))),
+        }
     }
 }
 
@@ -206,7 +308,7 @@ impl<K: AuthKind> OrderBuilder<Limit, K> {
         }
 
         let expiration = self.expiration.unwrap_or(DateTime::<Utc>::UNIX_EPOCH);
-        let order_type = self.order_type.unwrap_or(OrderType::GTC);
+        let order_type = self.order_type.clone().unwrap_or(OrderType::GTC);
         let post_only = Some(self.post_only.unwrap_or(false));
 
         if !matches!(order_type, OrderType::GTD) && expiration > DateTime::<Utc>::UNIX_EPOCH {
@@ -240,27 +342,16 @@ impl<K: AuthKind> OrderBuilder<Limit, K> {
             )),
         )?);
 
-        let timestamp_ms = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("time went backwards")
-            .as_millis();
-
-        let payload = OrderPayload {
-            order: Order {
-                salt: U256::from(salt),
-                maker: self.funder.unwrap_or(self.signer),
-                signer: self.signer,
-                tokenId: token_id,
-                makerAmount: U256::from(to_fixed_u128(maker_amount)),
-                takerAmount: U256::from(to_fixed_u128(taker_amount)),
-                side: side as u8,
-                signatureType: self.signature_type as u8,
-                timestamp: U256::from(timestamp_ms),
-                metadata: self.metadata.unwrap_or(B256::ZERO),
-                builder: self.builder_code.unwrap_or(B256::ZERO),
-            },
-            expiration: expiration_u256,
-        };
+        let payload = self
+            .build_payload(
+                token_id,
+                side,
+                to_fixed_u128(maker_amount),
+                to_fixed_u128(taker_amount),
+                salt,
+                expiration_u256,
+            )
+            .await?;
 
         #[cfg(feature = "tracing")]
         tracing::debug!(token_id = %token_id, side = ?side, price = %price, size = %size, "limit order built");
@@ -485,27 +576,16 @@ impl<K: AuthKind> OrderBuilder<Market, K> {
 
         let salt = to_ieee_754_int((self.salt_generator)());
 
-        let timestamp_ms = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("time went backwards")
-            .as_millis();
-
-        let payload = OrderPayload {
-            order: Order {
-                salt: U256::from(salt),
-                maker: self.funder.unwrap_or(self.signer),
-                signer: self.signer,
-                tokenId: token_id,
-                makerAmount: U256::from(to_fixed_u128(maker_amount)),
-                takerAmount: U256::from(to_fixed_u128(taker_amount)),
-                side: side as u8,
-                signatureType: self.signature_type as u8,
-                timestamp: U256::from(timestamp_ms),
-                metadata: self.metadata.unwrap_or(B256::ZERO),
-                builder: self.builder_code.unwrap_or(B256::ZERO),
-            },
-            expiration: U256::ZERO,
-        };
+        let payload = self
+            .build_payload(
+                token_id,
+                side,
+                to_fixed_u128(maker_amount),
+                to_fixed_u128(taker_amount),
+                salt,
+                U256::ZERO,
+            )
+            .await?;
 
         #[cfg(feature = "tracing")]
         tracing::debug!(token_id = %token_id, side = ?side, price = %price, amount = %amount.as_inner(), "market order built");

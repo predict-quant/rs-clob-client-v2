@@ -854,7 +854,8 @@ mod unauthenticated {
 
         // Verbatim sample from the production `/clob-markets/{id}` endpoint: server
         // returns short field names (`c`, `t`, `mts`, `fd.{r,e,to}`, …), not camelCase.
-        let condition_id = b256!("4c27acaae6b9528e6121c226f0c7e253073c0ecdee87eed1bca5b2fe4028e6ee");
+        let condition_id =
+            b256!("4c27acaae6b9528e6121c226f0c7e253073c0ecdee87eed1bca5b2fe4028e6ee");
         let condition_id_str = condition_id.to_string();
         let mock = server.mock(|when, then| {
             when.method(httpmock::Method::GET)
@@ -3040,7 +3041,8 @@ mod builder_authenticated {
         let server = MockServer::start();
         let client = create_authenticated(&server).await?;
 
-        let builder_code = b256!("00000000000000000000000000000000000000000000000000006275696c6431");
+        let builder_code =
+            b256!("00000000000000000000000000000000000000000000000000006275696c6431");
         let mock = server.mock(|when, then| {
             when.method(GET)
                 .path("/builder/trades")

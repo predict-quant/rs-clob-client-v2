@@ -638,15 +638,9 @@ mod tests {
         let amount = dec!(50);
         let price = dec!(0.5);
         let builder_rate = dec!(0.01);
-        let adjusted = adjust_market_buy_amount(
-            amount,
-            amount,
-            price,
-            dec!(0.25),
-            dec!(2),
-            builder_rate,
-        )
-        .unwrap();
+        let adjusted =
+            adjust_market_buy_amount(amount, amount, price, dec!(0.25), dec!(2), builder_rate)
+                .unwrap();
         let platform = calc_platform_fee(adjusted, price, dec!(0.25), 2);
         let builder = calc_builder_fee(adjusted, builder_rate);
         close_to(adjusted + platform + builder, amount, dec!(0.000001));
@@ -657,15 +651,9 @@ mod tests {
         let amount = dec!(30);
         let price = dec!(0.3);
         let builder_rate = dec!(0.02);
-        let adjusted = adjust_market_buy_amount(
-            amount,
-            amount,
-            price,
-            dec!(0.25),
-            dec!(2),
-            builder_rate,
-        )
-        .unwrap();
+        let adjusted =
+            adjust_market_buy_amount(amount, amount, price, dec!(0.25), dec!(2), builder_rate)
+                .unwrap();
         let platform = calc_platform_fee(adjusted, price, dec!(0.25), 2);
         let builder = calc_builder_fee(adjusted, builder_rate);
         close_to(adjusted + platform + builder, amount, dec!(0.000001));

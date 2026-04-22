@@ -94,6 +94,8 @@ pub async fn create_authenticated(server: &MockServer) -> anyhow::Result<TestCli
 }
 
 pub fn ensure_requirements(server: &MockServer, token_id: U256, tick_size: TickSize) {
+    ensure_version(server, 2);
+
     server.mock(|when, then| {
         when.method(httpmock::Method::GET).path("/neg-risk");
         then.status(StatusCode::OK)
@@ -113,6 +115,16 @@ pub fn ensure_requirements(server: &MockServer, token_id: U256, tick_size: TickS
         then.status(StatusCode::OK).json_body(json!({
                 "minimum_tick_size": tick_size.as_decimal(),
         }));
+    });
+}
+
+/// Mocks `GET /version` to return the specified protocol version. Order builds
+/// dispatch V1/V2 payloads based on this value.
+pub fn ensure_version(server: &MockServer, version: u32) {
+    server.mock(|when, then| {
+        when.method(httpmock::Method::GET).path("/version");
+        then.status(StatusCode::OK)
+            .json_body(json!({ "version": version }));
     });
 }
 
