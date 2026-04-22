@@ -6,14 +6,20 @@ pub use alloy::signers::Signer;
 /// This is the most common signer implementation.
 pub use alloy::signers::local::LocalSigner;
 use async_trait::async_trait;
+#[cfg(any(feature = "clob", test))]
 use base64::Engine as _;
+#[cfg(any(feature = "clob", test))]
 use base64::engine::general_purpose::URL_SAFE;
+#[cfg(any(feature = "clob", test))]
 use hmac::{Hmac, Mac as _};
+#[cfg(any(feature = "clob", test))]
+use reqwest::Body;
+use reqwest::Request;
 use reqwest::header::HeaderMap;
-use reqwest::{Body, Request};
 /// Secret string types that redact values in debug output for security.
 pub use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
+#[cfg(any(feature = "clob", test))]
 use sha2::Sha256;
 /// UUID type used for API keys and identifiers.
 pub use uuid::Uuid;
@@ -248,6 +254,9 @@ pub(crate) mod l2 {
     }
 }
 
+// These helpers back `l2::create_headers` and are covered by tests in this module.
+// Gated so the `lib` target without `clob` doesn't flag them as dead code.
+#[cfg(any(feature = "clob", test))]
 #[must_use]
 fn to_message(request: &Request, timestamp: Timestamp) -> String {
     let method = request.method();
@@ -257,6 +266,7 @@ fn to_message(request: &Request, timestamp: Timestamp) -> String {
     format!("{timestamp}{method}{path}{body}")
 }
 
+#[cfg(any(feature = "clob", test))]
 #[must_use]
 fn body_to_string(body: &Body) -> Option<String> {
     body.as_bytes()
@@ -264,6 +274,7 @@ fn body_to_string(body: &Body) -> Option<String> {
         .map(|b| b.replace('\'', "\""))
 }
 
+#[cfg(any(feature = "clob", test))]
 fn hmac(secret: &SecretString, message: &str) -> Result<String> {
     let decoded_secret = URL_SAFE.decode(secret.expose_secret())?;
     let mut mac = Hmac::<Sha256>::new_from_slice(&decoded_secret)?;
