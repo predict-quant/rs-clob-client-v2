@@ -70,6 +70,7 @@ impl WsMessage {
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
 pub struct BookUpdate {
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Market condition ID
     pub market: B256,
@@ -112,9 +113,11 @@ pub struct PriceChange {
 }
 
 #[non_exhaustive]
+#[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
 pub struct PriceChangeBatchEntry {
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// New price
     pub price: Decimal,
@@ -140,6 +143,7 @@ pub struct PriceChangeBatchEntry {
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
 pub struct TickSizeChange {
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Market condition ID
     pub market: B256,
@@ -158,6 +162,7 @@ pub struct TickSizeChange {
 #[derive(Debug, Clone, Deserialize, Builder)]
 pub struct LastTradePrice {
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Market condition ID
     pub market: B256,
@@ -184,6 +189,7 @@ pub struct BestBidAsk {
     /// Market condition ID
     pub market: B256,
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Current best bid price
     pub best_bid: Decimal,
@@ -283,9 +289,11 @@ pub struct EventMessage {
 
 /// Maker order details within a trade message.
 #[non_exhaustive]
+#[serde_as]
 #[derive(Debug, Clone, Deserialize, Builder)]
 pub struct MakerOrder {
     /// Asset/token identifier of the maker order
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Amount of maker order matched in trade
     pub matched_amount: Decimal,
@@ -335,6 +343,7 @@ pub struct TradeMessage {
     /// Market condition ID
     pub market: B256,
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Side of the trade
     pub side: Side,
@@ -409,6 +418,7 @@ pub struct OrderMessage {
     /// Market condition ID
     pub market: B256,
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Side of the order (BUY or SELL)
     pub side: Side,
@@ -474,6 +484,7 @@ pub enum OrderStatus {
 #[derive(Debug, Clone, Deserialize, Builder)]
 pub struct MidpointUpdate {
     /// Asset/token identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset_id: U256,
     /// Market condition ID
     pub market: B256,
