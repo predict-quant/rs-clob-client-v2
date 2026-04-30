@@ -70,6 +70,7 @@ pub struct Position {
     /// The user's proxy wallet address.
     pub proxy_wallet: Address,
     /// The outcome token asset identifier
+    #[serde_as(as = "DisplayFromStr")]
     pub asset: U256,
     /// The market condition ID (unique market identifier).
     pub condition_id: B256,
@@ -116,6 +117,7 @@ pub struct Position {
     /// Name of the opposite outcome.
     pub opposite_outcome: String,
     /// Asset identifier of the opposite outcome.
+    #[serde_as(as = "DisplayFromStr")]
     pub opposite_asset: U256,
     /// Market end/resolution date (if set).
     #[serde(default)]
@@ -130,12 +132,14 @@ pub struct Position {
 /// Returned by the `/closed-positions` endpoint. Represents positions that
 /// have been fully sold or redeemed, with final profit/loss figures.
 #[derive(Debug, Clone, Deserialize, Builder)]
+#[serde_as]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct ClosedPosition {
     /// The user's proxy wallet address.
     pub proxy_wallet: Address,
     /// The outcome token asset identifier (decimal string from API).
+    #[serde_as(as = "DisplayFromStr")]
     pub asset: U256,
     /// The market condition ID (unique market identifier).
     pub condition_id: B256,
@@ -164,6 +168,7 @@ pub struct ClosedPosition {
     /// Name of the opposite outcome.
     pub opposite_outcome: String,
     /// Asset identifier of the opposite outcome.
+    #[serde_as(as = "DisplayFromStr")]
     pub opposite_asset: U256,
     /// Market end/resolution date.
     pub end_date: DateTime<Utc>,
@@ -183,6 +188,7 @@ pub struct Trade {
     /// Trade side (BUY or SELL).
     pub side: Side,
     /// The outcome token asset identifier (decimal string from API).
+    #[serde_as(as = "DisplayFromStr")]
     pub asset: U256,
     /// The market condition ID (unique market identifier).
     pub condition_id: B256,
@@ -323,6 +329,7 @@ pub struct Holder {
     #[serde_as(as = "NoneAsEmptyString")]
     pub bio: Option<String>,
     /// The outcome token asset identifier (decimal string from API).
+    #[serde_as(as = "DisplayFromStr")]
     pub asset: U256,
     /// Holder's pseudonym (if set).
     #[serde(default)]
