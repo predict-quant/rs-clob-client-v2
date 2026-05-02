@@ -183,6 +183,10 @@ pub struct ClosedPosition {
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct Trade {
+    /// Unique trade identifier (if available).
+    #[serde(default)]
+    #[serde_as(as = "NoneAsEmptyString")]
+    pub id: Option<String>,
     /// The trader's proxy wallet address.
     pub proxy_wallet: Address,
     /// Trade side (BUY or SELL).
