@@ -452,6 +452,13 @@ pub struct OrderMessage {
     /// Order status
     #[serde(default)]
     pub status: Option<OrderStatusType>,
+
+    #[serde(default)]
+    pub order_type: Option<String>,
+
+    #[serde(default)]
+    #[serde_as(as = "Option<DisplayFromStr>")]
+    pub expiration: Option<i64>,
 }
 
 /// Order status for WebSocket order messages.
