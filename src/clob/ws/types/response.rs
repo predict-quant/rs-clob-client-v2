@@ -6,7 +6,7 @@ use serde_with::{DefaultOnNull, DisplayFromStr, NoneAsEmptyString, serde_as};
 use tracing::warn;
 
 use crate::auth::ApiKey;
-use crate::clob::types::{OrderStatusType, Side, TraderSide};
+use crate::clob::types::{OrderStatusType, OrderType, Side, TraderSide};
 use crate::clob::ws::interest::MessageInterest;
 use crate::error::Kind;
 use crate::types::{B256, Decimal, U256};
@@ -454,7 +454,7 @@ pub struct OrderMessage {
     pub status: Option<OrderStatusType>,
 
     #[serde(default)]
-    pub order_type: Option<String>,
+    pub order_type: Option<OrderType>,
 
     #[serde(default)]
     #[serde_as(as = "Option<DisplayFromStr>")]
